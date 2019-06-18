@@ -1,8 +1,11 @@
 import java.lang.StringBuilder;
+
+//Class representing the board where piece intance positions will be stored
+//as well as board dimensions
 public class Board {
     private int rows;
     private int cols;
-    private Piece[][] spaces;
+    private Piece[][] spaces; //A 2d array representing the rows and columns of the board
     private int spaces_filled;
 
 
@@ -20,6 +23,8 @@ public class Board {
     int getCols(){
         return cols;
     }
+
+    Piece getSpace(int row, int col){ return spaces[row][col]; }
 
     public int emptySpaces(){
         return (rows*cols) - spaces_filled;

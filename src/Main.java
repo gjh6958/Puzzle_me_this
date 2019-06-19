@@ -3,8 +3,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 public class Main {
 
@@ -121,25 +119,50 @@ public class Main {
         }else return (side == 3) && (piece1_sides[3] == -(piece2_sides[1]));
     }
 
-    //
-    private static void placeSides(@NotNull Board board, ArrayList<Piece> side_pieces, int side){
-        ArrayList<Piece> fits = new ArrayList<>();
-        Piece corner;
-        if((side == 0) || (side == 3)){
-            corner = board.getSpace(0, 0);
-            for(int i = 0; i < side_pieces.size()-1; i++){
-                if(fit(corner, side_pieces.get(i), 3)){
-                    fits.add(side_pieces.get(i));
+    private static ArrayList<Piece> findConfigs(@NotNull ArrayList<Piece> side_pieces, int fit_side, Piece start, ArrayList<Piece> config, int numPieces){
+        ArrayList<Piece> malleable = new ArrayList<>(side_pieces);
+        config.add(start);
+        malleable.remove(start);
+        if(malleable.size()!=0) {
+            for (int i = 0; i < malleable.size(); i++) {
+                if (fit(start, malleable.get(i), fit_side)) {
+                    return findConfigs(malleable, fit_side, malleable.get(i), config, numPieces);
                 }
             }
-            for(int i = 0; i < fits.size()-1; i++){
-                
+        }
+        return null;
+    }
+
+    //
+    private static ArrayList<ArrayList<Piece>> getSideConfigurations(@NotNull Board board, ArrayList<Piece> side_pieces, int side, int numPieces){
+        ArrayList<ArrayList<Piece>> configs = new ArrayList<>();
+        Piece corner;
+        int numConfigs = 0;
+        int fitSide;
+        //Each configuration is stored in a right to left or top to bottom fashion.
+        //fitSide gives the side to fit on depending on if the configuration is being built top to bottom or right to left
+        if(side == 0 || side == 2){ fitSide = 1; }else{ fitSide = 2; }
+        //The corner is the top-most or right-most piece for that configuration
+        if(side == 0 || side == 3){ corner = board.getSpace(0,0); }
+        else if(side == 1){ corner = board.getSpace(0, board.getCols()-1); }
+        else{ corner = board.getSpace(board.getRows()-1, 0); }
+
+        for(int i = 0; i < side_pieces.size(); i++){
+            if(fit(corner, side_pieces.get(i), fitSide)){
+                configs.add(new ArrayList<>());
+                findConfigs(side_pieces, fitSide, side_pieces.get(i), configs.get(numConfigs), numPieces);
+                numConfigs++;
             }
-        }else{
-            corner = board.getSpace(0, board.getCols());
         }
 
 
+        for(int i = 0; i < configs.size(); i++){
+            if(configs.get(i).size()!=numPieces){
+                configs.remove(i);
+            }
+        }
+
+        return configs;
     }
 
     // Finds the pieces that make up a side of the puzzle, puts them into correctly named
@@ -167,8 +190,14 @@ public class Main {
                 }
             }
         }
+
+        ArrayList<ArrayList<ArrayList<Piece>>> configs = new ArrayList<>();
+
         for(int i = 0; i < 4; i++){
-            placeSides(board, group.get(i), i);
+            ArrayList<ArrayList<Piece>> conf = getSideConfigurations(board, group.get(i), i, group.get(i).size());
+            if(conf.size() == 1){
+
+            }
         }
 
     }

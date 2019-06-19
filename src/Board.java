@@ -34,6 +34,7 @@ public class Board {
         if((row < rows && col < cols) && spaces[row][col] == null){
             spaces[row][col] = piece;
             spaces_filled++;
+            piece.setSpace(row, col);
             return true;
         }
         return false;
